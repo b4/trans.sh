@@ -28,16 +28,8 @@ substream() {
  echo $LSUBSTREAM
 }
 
-if [ "$COMMAND" = "1" ]
-then
- ffmpeg -re -i "$FILENAME" -vf "subtitles=$FILENAME:si=`substream`" -threads 2 -crf `quality` -preset ultrafast -c:a aac -strict experimental -ar 44100 -ac 2 -b:a 96k -c:v libx264 -r 25 -b:v 500k -f flv "rtmp://10.12.0.45/live/$CHANNEL"
-elif  [ "$COMMAND" = "2" ]
-then
- ffmpeg -re -i "$FILENAME" -crf `quality` -threads 2 -preset ultrafast -c:a aac -strict experimental -ar 44100 -ac 2 -b:a 96k -c:v libx264 -r 25 -b:v 500k -f flv "rtmp://10.12.0.45/live/$CHANNEL"
-elif  [ "$COMMAND" = "3" ]
-then
- ffmpeg -re -i "$FILENAME" -vf "dvd_subtitle=$FILENAME" -threads 2  `quality` $QUALITY -preset ultrafast -c:a aac -strict experimental -ar 44100 -ac 2 -b:a 96k -c:v libx264 -r 25 -b:v 500k -f flv "rtmp://10.12.0.45/live/$CHANNEL"
-else
+usage() {
+ echo
  echo "--Usage:"
  echo "First parameter: subtitle options"
  echo "Second parameter: input file"
@@ -61,4 +53,29 @@ else
  echo ""
  echo "--Constant Rate Factor setting:"
  echo "Default for my streaming is 22, 18-28 supported"
+ exit 1
+}
+
+subs() {
+ case "$COMMAND"
+  in
+   1) local SUBTITLES="subtitles=si="`substream`":f=/dev/fd/3" ;;
+   2) return ;;
+   3) local SUBTITLES="dvd_subtitle=/dev/fd/3" ;;
+ esac
+ echo -vf "$SUBTITLES"
+}
+
+case "$COMMAND"
+ in
+  1|3) exec 3< "$FILENAME" ;;
+  2) ;;
+  *) usage ;;
+esac
+
+if [ -z "$FILENAME" ] || [ -z "$CHANNEL" ]
+ then
+  usage
 fi
+
+ffmpeg -re -i "$FILENAME" `subs` -threads 2 -crf `quality` -preset ultrafast -c:a aac -strict experimental -ar 44100 -ac 2 -b:a 96k -c:v libx264 -r 25 -b:v 500k -f flv "rtmp://10.12.0.45/live/$CHANNEL"
