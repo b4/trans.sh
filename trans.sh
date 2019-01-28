@@ -59,11 +59,11 @@ usage() {
 subs() {
  case "$COMMAND"
   in
-   1) local SUBTITLES="subtitles=si="`substream`":f=/dev/fd/3" ;;
+   1) local SUBTITLES="-vf subtitles=si="`substream`":f=/dev/fd/3" ;;
    2) return ;;
-   3) local SUBTITLES="dvd_subtitle=/dev/fd/3" ;;
+   3) local SUBTITLES="-filter_complex "[0:v][$SUBSTREAM:s]overlay[v]"  -map "[v]" -map 0:a:0" ;;
  esac
- echo -vf "$SUBTITLES"
+ echo "$SUBTITLES"
 }
 
 case "$COMMAND"
