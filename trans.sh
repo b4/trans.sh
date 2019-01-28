@@ -43,7 +43,7 @@ usage() {
  echo "3: DVD subtitles in source file"
  echo ""
  echo "--File options:"
- echo "Filename must be less than 36 characters"
+ echo "File must exist."
  echo ""
  echo "--Channel name options:"
  echo "US-ASCII channel name on GSORG sync"
